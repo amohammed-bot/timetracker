@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: timetracker
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-CHANGE_THIS_PASSWORD}
+      POSTGRES_DB: timetracker
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U timetracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: ./backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgres://timetracker:${DB_PASSWORD:-CHANGE_THIS_PASSWORD}@db:5432/timetracker
+      JWT_SECRET: ${JWT_SECRET:-CHANGE_THIS_TO_A_LONG_RANDOM_STRING}
+    ports:
+      - "3000:3000"
+
+volumes:
+  db_data:
