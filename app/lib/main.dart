@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'app_state.dart';
-import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/stats_screen.dart';
 import 'screens/history_screen.dart';
@@ -9,7 +8,7 @@ import 'screens/history_screen.dart';
 void main() {
   runApp(
     ChangeNotifierProvider(
-      create: (_) => AppState()..load(),
+      create: (_) => AppState(),
       child: const TimeTrackerApp(),
     ),
   );
@@ -27,58 +26,77 @@ class TimeTrackerApp extends StatelessWidget {
         colorSchemeSeed: const Color(0xFF4F46E5),
         useMaterial3: true,
       ),
-      home: const _Gate(),
+      home: const MainShell(),
     );
   }
 }
 
-// Decides whether to show the login screen or the main app.
-class _Gate extends StatelessWidget {
-  const _Gate();
+// The bottom-navigation shell. No login - the app opens straight into use.
+class MainShell extends StatefulWidget {
+  const MainShell({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final state = context.watch<AppState>();
-    if (state.loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-    return state.isLoggedIn ? const _MainShell() : const LoginScreen();
-  }
+  State<MainShell> createState() => _MainShellState();
 }
 
-// The bottom-navigation shell shown once logged in.
-class _MainShell extends StatefulWidget {
-  const _MainShell();
-
-  @override
-  State<_MainShell> createState() => _MainShellState();
-}
-
-class _MainShellState extends State<_MainShell> {
+class _MainShellState extends State<MainShell> {
   int _index = 0;
 
   static const _titles = ['Track', 'Stats', 'History'];
 
-  @override
-  Widget build(BuildContext context) {
-    final pages = const [HomeScreen(), StatsScreen(), HistoryScreen()];
-    final isDemo = context.watch<AppState>().isDemo;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(isDemo ? '${_titles[_index]} · Demo' : _titles[_index]),
+  Future<void> _confirmReset() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Reset all data?'),
+        content: const Text(
+            'This deletes all your tracked time and custom categories. '
+            'This cannot be undone.'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Log out',
-            onPressed: () => context.read<AppState>().logout(),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Reset'),
           ),
         ],
       ),
-      // Keep each tab's state alive when switching.
-      body: IndexedStack(index: _index, children: pages),
+    );
+
+    if (confirmed == true && mounted) {
+      await context.read<AppState>().resetAll();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('All data cleared')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    final pages = const [HomeScreen(), StatsScreen(), HistoryScreen()];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_titles[_index]),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_outline),
+            tooltip: 'Reset all data',
+            onPressed: _confirmReset,
+          ),
+        ],
+      ),
+      // The key changes after a reset, which makes every screen reload fresh.
+      body: KeyedSubtree(
+        key: ValueKey(state.resetCount),
+        child: IndexedStack(index: _index, children: pages),
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),

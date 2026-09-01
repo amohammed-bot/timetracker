@@ -14,6 +14,8 @@ class Category {
       color: (json['color'] as String?) ?? '#4F46E5',
     );
   }
+
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'color': color};
 }
 
 class RunningTimer {
@@ -34,6 +36,12 @@ class RunningTimer {
       startedAt: DateTime.parse(json['started_at'] as String).toLocal(),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'category_id': categoryId,
+        'started_at': startedAt.toIso8601String(),
+      };
 }
 
 class TimeEntry {
@@ -68,6 +76,16 @@ class TimeEntry {
       seconds: json['seconds'] as int,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'category_id': categoryId,
+        'category_name': categoryName,
+        'color': color,
+        'started_at': startedAt.toIso8601String(),
+        'ended_at': endedAt?.toIso8601String(),
+        'seconds': seconds,
+      };
 }
 
 class CategoryStat {

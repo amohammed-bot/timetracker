@@ -2,8 +2,13 @@
 
 A time-tracking app for iOS and Android. Start a live timer for a category
 (Work, Study, Entertainment, or your own), stop it when you're done, and see
-day / week / month breakdowns with charts. Your data syncs across devices
-through a backend you host yourself.
+day / week / month breakdowns with charts.
+
+**The app works fully offline** — all data is stored on the phone itself, no
+account or server needed. A reset button in the app wipes everything and
+starts fresh. The `backend/` folder and `docker-compose.yml` are kept in the
+repo as an optional future upgrade if online sync across devices is ever
+wanted, but the app does not need them.
 
 ## What's in here
 
