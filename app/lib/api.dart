@@ -17,9 +17,25 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
-class Api {
+// The interface both the real API and the demo (offline) API follow.
+abstract class ApiClient {
+  void setToken(String? token);
+  Future<String> register(String email, String password);
+  Future<String> login(String email, String password);
+  Future<List<Category>> getCategories();
+  Future<Category> createCategory(String name, String color);
+  Future<void> deleteCategory(int id);
+  Future<RunningTimer> startTimer(int categoryId);
+  Future<void> stopTimer(int entryId);
+  Future<RunningTimer?> getRunningTimer();
+  Future<List<TimeEntry>> getHistory();
+  Future<Stats> getStats(String period);
+}
+
+class Api implements ApiClient {
   String? _token;
 
+  @override
   void setToken(String? token) => _token = token;
 
   Map<String, String> get _headers => {

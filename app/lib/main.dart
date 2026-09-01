@@ -64,10 +64,11 @@ class _MainShellState extends State<_MainShell> {
   @override
   Widget build(BuildContext context) {
     final pages = const [HomeScreen(), StatsScreen(), HistoryScreen()];
+    final isDemo = context.watch<AppState>().isDemo;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_titles[_index]),
+        title: Text(isDemo ? '${_titles[_index]} · Demo' : _titles[_index]),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),

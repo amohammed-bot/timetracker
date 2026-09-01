@@ -116,6 +116,22 @@ class _LoginScreenState extends State<LoginScreen> {
                       ? 'Already have an account? Log in'
                       : "New here? Create an account"),
                 ),
+                const SizedBox(height: 8),
+                const Divider(),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: _busy
+                      ? null
+                      : () => context.read<AppState>().enterDemo(),
+                  icon: const Icon(Icons.visibility_outlined),
+                  label: const Text('Try the demo (no account needed)'),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Demo login also works: demo@demo.com / demo123',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ],
             ),
           ),
